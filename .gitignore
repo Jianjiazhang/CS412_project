@@ -1,0 +1,9 @@
+# editors
+.vscode
+
+# data
+*.txt
+*.csv
+
+#jupyter notebooks
+*.ipynb
