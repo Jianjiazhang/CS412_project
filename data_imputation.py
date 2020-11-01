@@ -2,7 +2,7 @@ import json
 import os
 import numpy as np
 from opts import get_opts
-from data_split import node_extracing
+from data_split import split_data
 import missingpy as miss
 import tqdm
 import copy
@@ -29,8 +29,7 @@ class pipeline(object):
         data = json.loads(content)
         f.close()
 
-
-        pos,nodes = node_extracing(self.args)
+        nodes,pos = split_data.node_extracing(self)
         self.rm_data = {}
         ### keys = ['time','temperature', 'humidity','light','voltage'] ###
         for node in tqdm.tqdm(nodes):
@@ -99,4 +98,5 @@ class pipeline(object):
 if __name__ == '__main__':
     model = pipeline()
     model.data_imputating()
+    # print(len(model.rm_data))
     
