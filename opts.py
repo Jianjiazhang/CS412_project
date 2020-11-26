@@ -17,13 +17,45 @@ def get_opts():
     parser.add_argument('--filtering_val', type=int, default=20000,
                         help='Number used to delete data whose amount is below this value')
 
-    parser.add_argument('--tolerance', type=int, default=0.8,
+    parser.add_argument('--tolerance', type=float, default=0.8,
                         help='probability used to delete data who has more than 20% nan value inside')
+
+    parser.add_argument('--lr', type=float, default=0.001,
+                        help='learning rate for regression model')
+
+    parser.add_argument('--epochs', type=int, default=50,
+                        help='Number of training epochs')
+
+    parser.add_argument('--tw', type=int, default=50,
+                        help='training windows')
+
+    parser.add_argument('--num_fut', type=int, default=5,
+                        help='Number of prediction need')
 
 
     parser.add_argument('--rm_model',            type = ast.literal_eval, default = True,     
                     dest = 'rm_model',
                     help = "True or False flag, Remove model you saved but don't need." )
+
+    parser.add_argument('--data_saving',            type = ast.literal_eval, default = False,     
+                    dest = 'data_saving',
+                    help = "True or False flag, Saving data" )
+
+    parser.add_argument('--debug',            type = ast.literal_eval, default = True,     
+                    dest = 'debug',
+                    help = "True or False flag, Debug mode" )
+
+    parser.add_argument('--input_size', type=int, default=1,
+                        help='Input size of the regression model')
+
+    parser.add_argument('--hidden_layer_size', type=int, default=100,
+                        help='Hidden layer size of the regression model')
+
+    parser.add_argument('--output_size', type=int, default=1,
+                        help='Output size of the regression model')
+
+
+    
 
     ## Additional options (add your own hyperparameters here)
 

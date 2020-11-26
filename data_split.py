@@ -76,10 +76,10 @@ if __name__ == '__main__':
         print('>>> Folder data is created <<<')
     nodes,pos = pre.node_extracing()
     data = pre.data_spliting(nodes)
-    
-    # f = open(path, 'w')
-    # f.write(data_json)
-    # f.close()
+    if args.data_saving:
+        f = open(path, 'w')
+        f.write(data_json)
+        f.close()
     print('>>>>>> Spliting data saving is done ! <<<<<<')
 
     # print(data)
