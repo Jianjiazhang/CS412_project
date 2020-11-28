@@ -4,14 +4,16 @@ import argparse
 import json
 from opts import get_opts
 
+
 class split_data(object):
     """docstring for data_spliting"""
+
     def __init__(self, arg):
         super(split_data, self).__init__()
         self.args = arg
 
     def node_extracing(self):
-        data_file = os.path.join(self.args.data_path, self.args.node_file) 
+        data_file = os.path.join(self.args.data_path, self.args.node_file)
         f_nid = open(data_file, "r")
         nodes = []
         pos_re = {}
@@ -19,19 +21,19 @@ class split_data(object):
             tmp = line.split()
             nid = (tmp[0])
             nodes.append(nid)
-            pos_re[nid] = [float(tmp[1]),float(tmp[2])]
+            pos_re[nid] = [float(tmp[1]), float(tmp[2])]
         f_nid.close()
-        return nodes,pos_re
-        
+        return nodes, pos_re
 
-    def data_spliting(self,nodes):
-        data_file = os.path.join(self.args.data_path,self.args.data_file)
+    def data_spliting(self, nodes):
+        data_file = os.path.join(self.args.data_path, self.args.data_file)
         file = open(data_file, "r")
         ### initialize dict for storing data ###
         # node:{'time':[],'temperature':[], 'humidity':[],'light':[],'voltage':[]}
         re = {}
         for node in nodes:
-            re[int(node)] = {'time':[],'temperature':[], 'humidity':[],'light':[],'voltage':[]}
+            re[int(node)] = {'time': [], 'temperature': [],
+                             'humidity': [], 'light': [], 'voltage': []}
         for line in file:
             cache = line.split()
             tmp_time = cache[0]
@@ -53,16 +55,12 @@ class split_data(object):
         file.close()
         return re
 
-    def save_json(self,data):
+    def save_json(self, data):
         data_json = json.dumps(data)
         path = os.path.join(self.args.data_path, self.args.saving_file)
         f = open(path, 'w')
         f.write(data_json)
         f.close()
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -73,7 +71,7 @@ if __name__ == '__main__':
     else:
         os.path.mkdir(args.data_path)
         print('>>> Folder data is created <<<')
-    nodes,pos = pre.node_extracing()
+    nodes, pos = pre.node_extracing()
     data = pre.data_spliting(nodes)
     if args.data_saving:
         f = open(path, 'w+')
@@ -82,5 +80,3 @@ if __name__ == '__main__':
     print('>>>>>> Spliting data saving is done ! <<<<<<')
 
     # print(data)
-
-
