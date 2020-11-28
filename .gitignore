@@ -4,6 +4,10 @@
 # data
 *.txt
 *.csv
+data/
 
 #jupyter notebooks
 *.ipynb
+
+#python
+__pycache__
