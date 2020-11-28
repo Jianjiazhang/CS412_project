@@ -34,7 +34,6 @@ class split_data(object):
             re[int(node)] = {'time':[],'temperature':[], 'humidity':[],'light':[],'voltage':[]}
         for line in file:
             cache = line.split()
-
             tmp_time = cache[0]
             tmp_ID = cache[1]
             tmp_temperature = cache[2]
@@ -56,7 +55,7 @@ class split_data(object):
 
     def save_json(self,data):
         data_json = json.dumps(data)
-        path = os.path.join(self.arg.data_path, self.arg.saving_file)
+        path = os.path.join(self.args.data_path, self.args.saving_file)
         f = open(path, 'w')
         f.write(data_json)
         f.close()
@@ -77,7 +76,7 @@ if __name__ == '__main__':
     nodes,pos = pre.node_extracing()
     data = pre.data_spliting(nodes)
     if args.data_saving:
-        f = open(path, 'w')
+        f = open(path, 'w+')
         f.write(data_json)
         f.close()
     print('>>>>>> Spliting data saving is done ! <<<<<<')
