@@ -4,13 +4,14 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import sys
+import json
 from sklearn.preprocessing import MinMaxScaler
 from model import LSTM
 
 TRAIN_DATA_SIZE = 0.6
 VALIDATION_DATA_SIZE = 0.2
 TRIAN_WINDOW = 60
-EPOCHS = 1
+EPOCHS = 50
 
 def min_max_scale(data):
     scaler = MinMaxScaler(feature_range=(-1, 1))
@@ -28,9 +29,14 @@ def create_inout_sequences(input_data, tw):
     return inout_seq
 
 if __name__ == '__main__':
-    df = pd.read_csv(sys.argv[1], header=None)
+    with open(sys.argv[1]) as f:
+        data = json.load(f)
+        f.close()
+    data = data['1']    # only use the node 1
+    all_data = np.array([data['temperature'], data['humidity'], data['light'], data['voltage']]).T
 
-    all_data = df[[1, 2, 3, 4]].values.astype(float)
+    size = len(all_data) if sys.argv[2] == -1 else int(sys.argv[2])
+    all_data = all_data[:size]
     train_data = all_data[:int(len(all_data) * TRAIN_DATA_SIZE)]
     valid_data = all_data[int(len(all_data) * TRAIN_DATA_SIZE):int(len(all_data) * TRAIN_DATA_SIZE + len(all_data) * VALIDATION_DATA_SIZE)]
     test_data = all_data[int(len(all_data) * TRAIN_DATA_SIZE + len(all_data) * VALIDATION_DATA_SIZE):]
@@ -40,7 +46,8 @@ if __name__ == '__main__':
     print('first 5 data:\n', all_data[:5])
 
     train_data_normalized = train_data.reshape(-1, 4)
-    # train_data_normalized = min_max_scale(train_data)
+    #scaler = MinMaxScaler(feature_range=(-1, 1))
+    #train_data_normalized = scaler.fit_transform(train_data.reshape(-1, 4))
 
     print('scaled first 5 data:\n', train_data[:5])
 
@@ -82,7 +89,9 @@ if __name__ == '__main__':
             predicted = list(nn_model(seq))
             test_inputs.append(predicted)
 
+    #actual_predictions = scaler.inverse_transform(np.array(test_inputs[TRIAN_WINDOW:]))
     actual_predictions = np.array(test_inputs[TRIAN_WINDOW:])
     mse = ((actual_predictions - valid_data)**2).mean(0)
+    mse = [tensor.item() for tensor in mse]
     print('mse for each column:', mse)
     print('sum of mse', sum(mse))

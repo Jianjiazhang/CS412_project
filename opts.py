@@ -16,6 +16,8 @@ def get_opts():
                         help='the name of recording sensor data')
     parser.add_argument('--saving_file', type=str, default='data.json',
                         help='the name of spliting sensor data')
+    parser.add_argument('--processed_file', type=str, default='data_processed.json',
+                        help='the name of pre-processed sensor data file')
 
     parser.add_argument('--filtering_val', type=int, default=20000,
                         help='Number used to delete data whose amount is below this value')
@@ -28,6 +30,8 @@ def get_opts():
 
     parser.add_argument('--epochs', type=int, default=50,
                         help='Number of training epochs')
+    parser.add_argument('--data_size', type=int, default=5000,
+                        help='Number of dataset size')
 
     parser.add_argument('--tw', type=int, default=50,
                         help='training windows')

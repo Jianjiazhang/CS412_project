@@ -20,4 +20,4 @@ if __name__ == '__main__':
     print('>>>>>> Spliting data saving is done ! <<<<<<')
 
     model = pipeline()
-    model.data_imputating()
+    model.data_imputating(model.k_nearest)
