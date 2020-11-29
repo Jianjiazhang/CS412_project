@@ -3,15 +3,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
-import sys
 import json
+import argparse
 from sklearn.preprocessing import MinMaxScaler
 from model import LSTM
 
-TRAIN_DATA_SIZE = 0.6
-VALIDATION_DATA_SIZE = 0.2
+TRAIN_DATA_SIZE = 0.8
 TRIAN_WINDOW = 60
-EPOCHS = 50
+
 
 def min_max_scale(data):
     scaler = MinMaxScaler(feature_range=(-1, 1))
@@ -29,27 +28,37 @@ def create_inout_sequences(input_data, tw):
     return inout_seq
 
 if __name__ == '__main__':
-    with open(sys.argv[1]) as f:
+    parser = argparse.ArgumentParser(description='Baseline model')
+
+    parser.add_argument('--data', type=str, default='../data/data_no_nan.json')
+    parser.add_argument('--size', type=int, default=15000)
+    parser.add_argument('--epochs', type=int, default=1)
+    parser.add_argument('--min_max', type=int, default=0, help='1 for applying min max scaling, 0 for no scaling')
+    opts = parser.parse_args()
+    
+    with open(opts.data) as f:
         data = json.load(f)
         f.close()
     data = data['1']    # only use the node 1
     all_data = np.array([data['temperature'], data['humidity'], data['light'], data['voltage']]).T
 
-    size = len(all_data) if sys.argv[2] == -1 else int(sys.argv[2])
+    size = len(all_data) if opts.size == -1 else opts.size
     all_data = all_data[:size]
     train_data = all_data[:int(len(all_data) * TRAIN_DATA_SIZE)]
-    valid_data = all_data[int(len(all_data) * TRAIN_DATA_SIZE):int(len(all_data) * TRAIN_DATA_SIZE + len(all_data) * VALIDATION_DATA_SIZE)]
-    test_data = all_data[int(len(all_data) * TRAIN_DATA_SIZE + len(all_data) * VALIDATION_DATA_SIZE):]
+    test_data = all_data[int(len(all_data) * TRAIN_DATA_SIZE):]
     print('train data len:', len(train_data))
-    print('valid data len:', len(valid_data))
     print('test data len:', len(test_data))
     print('first 5 data:\n', all_data[:5])
 
-    train_data_normalized = train_data.reshape(-1, 4)
-    #scaler = MinMaxScaler(feature_range=(-1, 1))
-    #train_data_normalized = scaler.fit_transform(train_data.reshape(-1, 4))
+    epochs = opts.epochs
 
-    print('scaled first 5 data:\n', train_data[:5])
+    if opts.min_max == 0:
+        train_data_normalized = train_data.reshape(-1, 4)
+    else:
+        scaler = MinMaxScaler(feature_range=(-1, 1))
+        train_data_normalized = scaler.fit_transform(train_data.reshape(-1, 4))
+
+    print('scaled first 5 data:\n', train_data_normalized[:5])
 
     train_data_normalized = torch.FloatTensor(train_data_normalized).cuda()
     
@@ -62,7 +71,7 @@ if __name__ == '__main__':
     print('baseline model:', nn_model)
 
     # train model
-    for i in range(EPOCHS):
+    for i in range(epochs):
         for seq, labels in train_inout_seq:
             optimizer.zero_grad()
             nn_model.hidden_cell = (torch.zeros(1, 1, nn_model.hidden_layer_size).cuda(),
@@ -77,7 +86,7 @@ if __name__ == '__main__':
     print(f'final epoch: {i:3} loss: {single_loss.item():10.10f}')
 
     # inference
-    fut_pred = len(valid_data)
+    fut_pred = len(test_data)
     test_inputs = train_data_normalized[-TRIAN_WINDOW:].tolist()
 
     nn_model.eval()
@@ -89,9 +98,12 @@ if __name__ == '__main__':
             predicted = list(nn_model(seq))
             test_inputs.append(predicted)
 
-    #actual_predictions = scaler.inverse_transform(np.array(test_inputs[TRIAN_WINDOW:]))
-    actual_predictions = np.array(test_inputs[TRIAN_WINDOW:])
-    mse = ((actual_predictions - valid_data)**2).mean(0)
+    if opts.min_max == 0:
+        actual_predictions = np.array(test_inputs[TRIAN_WINDOW:])
+    else:
+        actual_predictions = scaler.inverse_transform(np.array(test_inputs[TRIAN_WINDOW:]))
+    print('length of predicted data:', len(actual_predictions))
+    mse = ((actual_predictions - test_data)**2).mean(0)
     mse = [tensor.item() for tensor in mse]
     print('mse for each column:', mse)
     print('sum of mse', sum(mse))
