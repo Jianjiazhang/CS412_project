@@ -45,7 +45,7 @@ def train(data,args):
     for i in range(args.epochs):
         for seq, labels in train_inout_seq:
             optimizer1.zero_grad()
-            optimizer1.zero_grad()
+            optimizer2.zero_grad()
 
             model1.hidden_cell = (torch.zeros(1, 1, model1.hidden_layer_size),
                             torch.zeros(1, 1, model1.hidden_layer_size))
