@@ -67,6 +67,10 @@ def get_opts():
                     dest = 'GPU',
                     help = "True or False flag, GPU mode" )
 
+    parser.add_argument('--fusion',            type = ast.literal_eval, default = True,     
+                    dest = 'fusion',
+                    help = "True or False flag, fusion mode" )
+
 
     parser.add_argument('--input_size', type=int, default=1,
                         help='Input size of the regression model')
