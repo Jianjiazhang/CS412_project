@@ -150,7 +150,9 @@ def train(train,test,args):
     model1 = LSTM1(args)
     # model2 = LSTM2(args)
     loss_function = nn.MSELoss()
-
+    if args.GPU:
+        model1.cuda()
+        # model2.cuda()
     ### need more optimizers ###
     '''
         1. For each optimizer, we can try different parameters
@@ -176,7 +178,9 @@ def train(train,test,args):
 
             labels = labels.numpy()
             labels = torch.from_numpy(labels).float()
-
+            if args.GPU:
+                seq = seq.cuda()
+                labels = labels.cuda()
             y_pred1 = model1(seq)
 
             # y_pred2 = model2(seq)
