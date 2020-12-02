@@ -10,12 +10,12 @@ class LSTM1(nn.Module):
         super().__init__()
         self.hidden_layer_size = args.hidden_layer_size
 
-        self.lstm = nn.LSTM(args.input_size, args.hidden_layer_size)
+        self.lstm = nn.LSTM(args.input_size, args.hidden_layer_size).cuda()
 
-        self.linear = nn.Linear(args.hidden_layer_size, args.output_size)
+        self.linear = nn.Linear(args.hidden_layer_size, args.output_size).cuda()
 
-        self.hidden_cell = (torch.zeros(1, 1, self.hidden_layer_size),
-                            torch.zeros(1, 1, self.hidden_layer_size))
+        self.hidden_cell = (torch.zeros(1, 1, self.hidden_layer_size).cuda(),
+                            torch.zeros(1, 1, self.hidden_layer_size).cuda())
 
     def forward(self, input_seq):
         lstm_out, self.hidden_cell = self.lstm(
@@ -27,14 +27,14 @@ class LSTM1(nn.Module):
 class LSTM2(nn.Module):
     def __init__(self, args):
         super().__init__()
-        self.hidden_layer_size = args.hidden_layer_size
+        self.hidden_layer_size = args.hidden_layer_size//2
 
-        self.lstm = nn.LSTM(args.input_size, args.hidden_layer_size//2)
+        self.lstm = nn.LSTM(args.input_size, args.hidden_layer_size//2).cuda()
 
-        self.linear = nn.Linear(args.hidden_layer_size//2, args.output_size)
+        self.linear = nn.Linear(args.hidden_layer_size//2, args.output_size).cuda()
 
-        self.hidden_cell = (torch.zeros(1, 1, self.hidden_layer_size//2),
-                            torch.zeros(1, 1, self.hidden_layer_size//2))
+        self.hidden_cell = (torch.zeros(1, 1, self.hidden_layer_size//2).cuda(),
+                            torch.zeros(1, 1, self.hidden_layer_size//2).cuda())
 
     def forward(self, input_seq):
         lstm_out, self.hidden_cell = self.lstm(

@@ -31,12 +31,12 @@ def train(data, args):
     optimizer1 = torch.optim.Adam(model1.parameters(), lr=args.lr)
     optimizer2 = torch.optim.Adam(model2.parameters(), lr=args.lr)
 
-    train_data = torch.FloatTensor(data).view(-1)
+    train_data = torch.FloatTensor(data).view(-1).cuda()
 
     ### sarimax model ###
-    normalized = preprocessing.normalize(data.reshape(-1, 1))
-    sarimax = SArimax(normalized)
-    re = sarimax.predict()
+    # normalized = preprocessing.normalize(data.reshape(-1, 1))
+    # sarimax = SArimax(normalized)
+    # re = sarimax.predict()
     #####################
 
     train_inout_seq = create_inout_sequences(train_data, args)
@@ -47,9 +47,10 @@ def train(data, args):
             optimizer1.zero_grad()
             optimizer2.zero_grad()
 
-            model1.hidden_cell = (torch.zeros(1, 1, model1.hidden_layer_size),
-                                  torch.zeros(1, 1, model1.hidden_layer_size))
-
+            model1.hidden_cell = (torch.zeros(1, 1, model1.hidden_layer_size).cuda(),
+                                  torch.zeros(1, 1, model1.hidden_layer_size).cuda())
+            model2.hidden_cell = (torch.zeros(1, 1, model2.hidden_layer_size).cuda(),
+                                  torch.zeros(1, 1, model2.hidden_layer_size).cuda())
             y_pred1 = model1(seq)
             y_pred2 = model2(seq)
 
@@ -71,25 +72,22 @@ def train(data, args):
             optimizer1.step()
             optimizer2.step()
 
-        print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
+        print(f'epoch: {i:3} loss: {single_loss1.item():10.8f}')
+        print(f'epoch: {i:3} loss: {single_loss2.item():10.8f}')
 
-    ### Place to ensemble the results ###
-    actual_predictions = evaluate(model1, args, data)
-    ### compute MSE ###
-    print(
-        f"MSE：{mean_squared_error(actual_predictions, data[-args.num_fut:])}")
+    return model1, model2
 
 
-def evaluate(model, args, data):
+def evaluate(model, args, data, num_fut):
     model.eval()
-    test_inputs = data[-args.num_fut:].tolist()
-    for i in range(args.num_fut):
-        seq = torch.FloatTensor(test_inputs[-args.num_fut:])
+    test_inputs = data[-args.tw:].tolist()
+    for i in range(num_fut):
+        seq = torch.FloatTensor(test_inputs[-args.tw:]).cuda()
         with torch.no_grad():
-            model.hidden = (torch.zeros(1, 1, model.hidden_layer_size),
-                            torch.zeros(1, 1, model.hidden_layer_size))
+            model.hidden = (torch.zeros(1, 1, model.hidden_layer_size).cuda(),
+                            torch.zeros(1, 1, model.hidden_layer_size).cuda())
             test_inputs.append(model(seq).item())
-    actual_predictions = np.array(test_inputs[args.num_fut:]).reshape(-1)
+    actual_predictions = np.array(test_inputs[args.tw:]).reshape(-1)
     ### compute MSE ###
     # print(f"MSE：{mean_squared_error(actual_predictions, data[-args.num_fut:])}")
     return actual_predictions
@@ -106,11 +104,27 @@ def main(args):
         2. Only using first 1000 temperature data 
     '''
     subdata = data['1']
-    input_seq = np.array(subdata['temperature'][:1000])
+    train_data_size = int(args.data_size * 0.8)
+    input_seq = np.array(subdata[args.column][:train_data_size])
+    test_data = np.array(subdata[args.column][train_data_size:])
 
     print('>>>>> Input sequence has been created <<<<<')
 
-    train(input_seq, args)
+    # LSTM models setup
+    model1, model2 = train(input_seq, args)
+
+    # SArimax model setup
+    # model_SArimax = SArimax(input_seq)
+    # actual_predictions_model = model_SArimax.predict()
+
+    ### Place to ensemble the results ###
+    actual_predictions_model1 = evaluate(model1, args, input_seq, len(test_data))
+    actual_predictions_model2 = evaluate(model2, args, input_seq, len(test_data))
+    ensemble = actual_predictions_model1 * 0.5 + actual_predictions_model2 * 0.5
+    ### compute MSE ###
+    print(f"MSE of Model 1：{mean_squared_error(actual_predictions_model1, test_data)}")
+    print(f"MSE of Model 2：{mean_squared_error(actual_predictions_model2, test_data)}")
+    print(f"MSE of Ensemble Method：{mean_squared_error(ensemble, test_data)}")
 
 
 if __name__ == '__main__':
