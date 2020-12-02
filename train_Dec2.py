@@ -35,6 +35,8 @@ def train(data, args):
     optimizer2 = torch.optim.Adam(model2.parameters(), lr=args.lr)
 
     train_data = torch.FloatTensor(data).view(-1)
+    if args.GPU:
+        train_data = train_data.cuda()
 
     ### sarimax model ###
     # normalized = preprocessing.normalize(data.reshape(-1, 1))
