@@ -29,6 +29,12 @@ def get_opts():
     parser.add_argument('--epochs', type=int, default=50,
                         help='Number of training epochs')
 
+    parser.add_argument('--data_size', type=int, default=15000,
+                        help='Number of dataset size')
+
+    parser.add_argument('--column', type=str, default='temperature',
+                        help='the name of the column to be predicted')
+
     parser.add_argument('--num_layers', type=int, default=1,
                         help='Number of LSTM layers')
 
@@ -57,7 +63,12 @@ def get_opts():
                     dest = 'debug',
                     help = "True or False flag, Debug mode" )
 
-    parser.add_argument('--input_size', type=int, default=4,
+    parser.add_argument('--GPU',            type = ast.literal_eval, default = False,     
+                    dest = 'GPU',
+                    help = "True or False flag, GPU mode" )
+
+
+    parser.add_argument('--input_size', type=int, default=1,
                         help='Input size of the regression model')
 
     parser.add_argument('--hidden_layer_size', type=int, default=100,
