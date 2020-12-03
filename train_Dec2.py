@@ -1,7 +1,7 @@
 import numpy as np
 import json
 from opts import get_opts
-from model import LSTM1, LSTM2, SArimax
+from model_Dec2 import LSTM1, LSTM2, SArimax
 import torch
 import torch.nn as nn
 from sklearn.metrics import mean_squared_error, r2_score
@@ -55,10 +55,14 @@ def train(data, args):
             model1.hidden_cell = (torch.zeros(1, 1, model1.hidden_layer_size),
                                   torch.zeros(1, 1, model1.hidden_layer_size))
 
-
             ### dim check ###
-            model2.hidden_cell = (torch.zeros(1, 1, model2.hidden_layer_size//2),
-                                  torch.zeros(1, 1, model2.hidden_layer_size//2))
+            model2.hidden_cell = (torch.zeros(1, 1, model2.hidden_layer_size),
+                                  torch.zeros(1, 1, model2.hidden_layer_size))
+            
+            if args.GPU:
+                model1.hidden_cell = (model1.hidden_cell[0].cuda(), model1.hidden_cell[1].cuda())
+                model2.hidden_cell = (model2.hidden_cell[0].cuda(), model2.hidden_cell[1].cuda())
+
             y_pred1 = model1(seq)
             y_pred2 = model2(seq)
 
@@ -92,9 +96,13 @@ def evaluate(model, args, data, num_fut):
     test_inputs = data[-args.tw:].tolist()
     for i in range(num_fut):
         seq = torch.FloatTensor(test_inputs[-args.tw:])
+        if args.GPU:
+            seq = seq.cuda()
         with torch.no_grad():
             model.hidden = (torch.zeros(1, 1, model.hidden_layer_size),
                             torch.zeros(1, 1, model.hidden_layer_size))
+            if args.GPU:
+                model.hidden = (model.hidden[0].cuda(), model.hidden[1].cuda())
             test_inputs.append(model(seq).item())
     actual_predictions = np.array(test_inputs[args.tw:]).reshape(-1)
     ### compute MSE ###
