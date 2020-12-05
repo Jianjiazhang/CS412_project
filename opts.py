@@ -26,7 +26,8 @@ def get_opts():
     parser.add_argument('--dp', type=float, default=0.5,
                         help='Value of Dropout')
 
-    parser.add_argument('--epochs', type=int, default=50,
+    parser.add_argument('--epochs', type=int, default=5,
+
                         help='Number of training epochs')
 
     parser.add_argument('--data_size', type=int, default=15000,
@@ -44,7 +45,8 @@ def get_opts():
     parser.add_argument('--batch_size', type=int, default=32,
                         help='The size of the input batch')
 
-    parser.add_argument('--tw', type=int, default=50,
+    parser.add_argument('--tw', type=int, default=10,
+
                         help='training windows')
 
     parser.add_argument('--num_fut', type=int, default=5,
