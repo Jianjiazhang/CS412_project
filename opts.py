@@ -27,6 +27,7 @@ def get_opts():
                         help='Value of Dropout')
 
     parser.add_argument('--epochs', type=int, default=5,
+
                         help='Number of training epochs')
 
     parser.add_argument('--data_size', type=int, default=15000,
@@ -45,6 +46,7 @@ def get_opts():
                         help='The size of the input batch')
 
     parser.add_argument('--tw', type=int, default=10,
+
                         help='training windows')
 
     parser.add_argument('--num_fut', type=int, default=5,
